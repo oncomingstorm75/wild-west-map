@@ -1,44 +1,115 @@
-/* Import a western-style font */
-@import url('https://fonts.googleapis.com/css2?family=Rye&display=swap');
-
 body {
-    padding: 0;
+    font-family: sans-serif;
+    background-color: #2b2b2b;
+    color: #e0e0e0;
     margin: 0;
-    background-color: #f3eacb; /* Parchment color */
-    font-family: 'Rye', cursive; /* Western font */
+    padding: 20px;
+    text-align: center;
+    overflow: hidden; /* Prevents scrollbars when sidebar is open */
 }
 
-html, body, #map {
-    height: 100%;
-    width: 100%;
+.controls {
+    margin-bottom: 15px;
 }
 
-/* Style the popups to look like old paper */
-.leaflet-popup-content-wrapper {
-    background: #f3eacb;
-    color: #4a2c2a;
-    border: 2px solid #8B4513; /* SaddleBrown */
-    border-radius: 5px;
+.map-container {
+    position: relative;
+    display: inline-block;
 }
 
-.leaflet-popup-content {
-    font-size: 16px;
-}
-
-.leaflet-popup-content textarea {
-    width: 95%;
-    height: 60px;
-    border: 1px solid #c9a47a;
-    background: #fff8e1;
-    color: #4a2c2a;
-}
-
-.leaflet-popup-content button {
-    font-family: 'Rye', cursive;
-    background-color: #8B4513;
-    color: #f3eacb;
-    border: none;
-    padding: 5px 10px;
-    margin-top: 5px;
+.map-pin {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #888888; /* Default color */
+    border-radius: 50%;
     cursor: pointer;
+    border: 2px solid #1c1c1c;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s;
+}
+
+.map-pin:hover {
+    transform: scale(1.3);
+    z-index: 10;
+}
+
+/* --- Pin Color Styles --- */
+.map-pin[data-category="quest"] { background-color: #ffeb3b; } /* Yellow */
+.map-pin[data-category="hostile"] { background-color: #d32f2f; } /* Red */
+.map-pin[data-category="clue"] { background-color: #1e88e5; } /* Blue */
+.map-pin[data-category="safe"] { background-color: #43a047; } /* Green */
+
+/* --- Sidebar Styles --- */
+#notes-sidebar {
+    position: fixed;
+    top: 0;
+    right: -350px; /* Start off-screen */
+    width: 300px;
+    height: 100%;
+    background-color: #3c3f41;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+    padding: 25px;
+    transition: right 0.3s ease-in-out;
+    overflow-y: auto;
+    color: #e0e0e0;
+    text-align: left;
+    z-index: 100;
+}
+
+#notes-sidebar.open {
+    right: 0; /* Slide in */
+}
+
+#notes-sidebar h2 {
+    margin-top: 0;
+    border-bottom: 1px solid #555;
+    padding-bottom: 10px;
+}
+
+#notes-sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+#notes-sidebar li {
+    background-color: #2b2b2b;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    border-left: 5px solid #888; /* Default border */
+}
+
+#notes-sidebar li h3 { margin: 0 0 5px 0; }
+#notes-sidebar li p { margin: 0; font-size: 0.9em; opacity: 0.8; }
+
+/* Sidebar Pin Color Indicators */
+#notes-sidebar li[data-category="quest"] { border-left-color: #ffeb3b; }
+#notes-sidebar li[data-category="hostile"] { border-left-color: #d32f2f; }
+#notes-sidebar li[data-category="clue"] { border-left-color: #1e88e5; }
+#notes-sidebar li[data-category="safe"] { border-left-color: #43a047; }
+
+/* --- On-Map Note Popup Styles --- */
+.map-note-popup {
+    position: absolute;
+    width: 200px;
+    background-color: rgba(43, 43, 43, 0.95);
+    border: 1px solid #888;
+    border-radius: 5px;
+    padding: 10px;
+    color: #e0e0e0;
+    z-index: 20; /* Make sure it appears above pins */
+    pointer-events: none; /* Prevents the note from blocking clicks on things behind it */
+    text-align: left;
+}
+
+.map-note-popup h3 {
+    margin: 0 0 5px 0;
+    font-size: 1em;
+    color: #ffeb3b; /* Quest yellow color for titles */
+}
+
+.map-note-popup p {
+    margin: 0;
+    font-size: 0.9em;
 }
