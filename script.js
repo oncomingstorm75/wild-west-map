@@ -25,8 +25,8 @@ function initializeMap() {
     const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2 });
     const bounds = [[0, 0], [mapHeight, mapWidth]];
     
-    // Create the image overlay and assign it to a variable
-    const image = L.imageOverlay('assets/image.png', bounds).addTo(map);
+    // THE CRITICAL FIX: Make the image layer interactive.
+    const image = L.imageOverlay('assets/image.png', bounds, { interactive: true }).addTo(map);
     
     map.fitBounds(bounds);
 
@@ -108,8 +108,7 @@ function initializeMap() {
         }
     });
 
-    // --- THE FINAL FIX ---
-    // Listen for clicks directly on the IMAGE OVERLAY, not the map container.
+    // Listen for clicks directly on the now-interactive IMAGE OVERLAY.
     image.on('click', function(e) {
         if (inAddPinMode) {
             openPinModal(e.latlng);
