@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <header id="main-header">
         <h1>The Territory</h1>
         <div class="header-controls">
@@ -17,14 +16,11 @@
             <button id="toggle-notes" class="western-button"><i class="fas fa-scroll"></i> Notes</button>
         </div>
     </header>
-
     <div id="map"></div>
-
     <div id="notes-sidebar">
         <h2>All Notes</h2>
         <ul id="notes-list"></ul>
     </div>
-
     <div id="pin-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -47,13 +43,8 @@
             <button id="save-pin-button" class="western-button">Add Pin</button>
         </div>
     </div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script>
-
-    <script src="script.js"></script>
-
+   
+    <script src="script.js" type="module" defer></script>
 </body>
 </html>
