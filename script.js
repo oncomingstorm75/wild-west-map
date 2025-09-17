@@ -15,14 +15,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const pinsRef = ref(database, 'pins');
-const drawingsRef = ref(database, 'drawings'); // Firebase ref for drawings
+const drawingsRef = ref(database, 'drawings');
 
 // --- 2. LEAFLET MAP SETUP ---
 const mapWidth = 2048;
 const mapHeight = 1741;
 const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2 });
 const bounds = [[0, 0], [mapHeight, mapWidth]];
-// Ensure your map image file is in the correct path
 L.imageOverlay('assets/image.png', bounds).addTo(map);
 map.fitBounds(bounds);
 
@@ -32,8 +31,6 @@ const notesList = document.getElementById('notes-list');
 const toggleButton = document.getElementById('toggle-notes');
 const mapContainer = document.getElementById('map');
 const addPinModeButton = document.getElementById('add-pin-mode-button');
-
-// Modal elements
 const pinModal = document.getElementById('pin-modal');
 const closeButton = pinModal.querySelector('.close-button');
 const pinTitleInput = document.getElementById('pin-title');
@@ -43,7 +40,7 @@ const savePinButton = document.getElementById('save-pin-button');
 // --- 4. LOCAL DATA & STATE ---
 const markers = {};
 let allPinsData = {};
-let inAddPinMode = false; // State for pin placement mode
+let inAddPinMode = false;
 let clickedCoords = null;
 
 const categoryIcons = {
@@ -56,7 +53,7 @@ const categoryIcons = {
 
 // --- 5. DRAWING SETUP ---
 const freeDraw = new L.FreeDraw({
-    mode: L.FreeDraw.MODES.ALL, // Allow create, edit, delete, append
+    mode: L.FreeDraw.MODES.ALL, // This line will now work correctly
     markerIcon: L.divIcon({ className: 'freedraw-vertex-icon' })
 });
 map.addLayer(freeDraw);
@@ -135,7 +132,7 @@ savePinButton.addEventListener('click', () => {
         category: selectedCategory
     });
     closePinModal();
-    exitAddPinMode(); // Automatically exit mode after saving a pin
+    exitAddPinMode();
 });
 
 toggleButton.addEventListener('click', () => {
