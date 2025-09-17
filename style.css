@@ -10,7 +10,6 @@
     --text-secondary: #b0b0b0;
     --border-color: #5a5a5a;
     --accent-primary: #d4ac0d; /* Gold */
-    --accent-secondary: #a93226; /* Dark Red */
     --accent-yellow: #f1c40f;
     --accent-red: #e74c3c;
     --accent-blue: #3498db;
@@ -31,11 +30,9 @@ html, body, #map {
     width: 100%;
 }
 
-/* NEW: Make the area around the map dark */
 .leaflet-container {
     background-color: var(--background-dark);
 }
-
 
 h1, h2, h3 { font-family: 'Rye', cursive; color: var(--accent-primary); }
 p, label, input, textarea, button, ul, li { font-family: 'Merriweather', serif; }
@@ -79,7 +76,7 @@ p, label, input, textarea, button, ul, li { font-family: 'Merriweather', serif; 
 #main-header h1 { margin: 0; font-size: 2em; text-shadow: 2px 2px 3px rgba(0,0,0,0.5); }
 .header-controls { display: flex; gap: 10px; }
 
-/* --- LEAFLET & DRAWING STYLES --- */
+/* --- LEAFLET POPUP STYLES --- */
 .leaflet-popup-content-wrapper {
     background: var(--background-med);
     color: var(--text-primary);
@@ -92,13 +89,6 @@ p, label, input, textarea, button, ul, li { font-family: 'Merriweather', serif; 
     color: var(--text-primary);
     width: 95%; height: 80px;
     resize: vertical;
-}
-.leaflet-draw-toolbar a {
-    background-color: var(--background-med);
-    border-color: var(--border-color);
-}
-.leaflet-draw-toolbar a:hover {
-    background-color: var(--background-light);
 }
 .custom-div-icon {
     border: 2px solid var(--text-primary);
