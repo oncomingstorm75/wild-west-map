@@ -1,10 +1,11 @@
-// This event listener waits for the entire HTML document to be loaded and parsed
+// --- 1. FIREBASE IMPORTS (MUST BE AT THE TOP LEVEL) ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+// This event listener waits for the entire HTML document to be loaded before running code
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. FIREBASE SETUP ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
-
+    // --- 2. FIREBASE CONFIG & INITIALIZATION ---
     const firebaseConfig = {
         apiKey: "AIzaSyAh_wDgSsdpG-8zMmgcSVgyKl1IKOvD2mE",
         authDomain: "wild-west-map.firebaseapp.com",
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pinsRef = ref(database, 'pins');
     const drawingsRef = ref(database, 'drawings');
 
-    // --- 2. LEAFLET MAP SETUP ---
+    // --- 3. LEAFLET MAP SETUP ---
     const mapWidth = 2048;
     const mapHeight = 1741;
     const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2 });
@@ -28,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     L.imageOverlay('assets/image.png', bounds).addTo(map);
     map.fitBounds(bounds);
 
-    // --- 3. DOM ELEMENT REFERENCES ---
+    // --- 4. DOM ELEMENT REFERENCES ---
     const notesSidebar = document.getElementById('notes-sidebar');
     const notesList = document.getElementById('notes-list');
     const toggleButton = document.getElementById('toggle-notes');
@@ -40,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pinNoteTextarea = document.getElementById('pin-note');
     const savePinButton = document.getElementById('save-pin-button');
 
-    // --- 4. LOCAL DATA & STATE ---
+    // --- 5. LOCAL DATA & STATE ---
     const markers = {};
     let allPinsData = {};
     let inAddPinMode = false;
@@ -54,14 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
         default: 'fas fa-compass'
     };
 
-    // --- 5. DRAWING SETUP ---
+    // --- 6. DRAWING SETUP ---
     const freeDraw = new L.FreeDraw({
         mode: L.FreeDraw.MODES.ALL,
         markerIcon: L.divIcon({ className: 'freedraw-vertex-icon' })
     });
     map.addLayer(freeDraw);
 
-    // --- 6. CORE FUNCTIONS ---
+    // --- 7. CORE FUNCTIONS ---
     function renderSidebar() {
         notesList.innerHTML = '';
         for (const pinId in allPinsData) {
@@ -104,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pinModal.style.display = 'none';
     }
 
-    // --- 7. EVENT LISTENERS ---
+    // --- 8. EVENT LISTENERS ---
     addPinModeButton.addEventListener('click', () => {
         if (inAddPinMode) {
             exitAddPinMode();
@@ -147,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 8. FIREBASE REAL-TIME LISTENERS ---
+    // --- 9. FIREBASE REAL-TIME LISTENERS ---
     onValue(pinsRef, (snapshot) => {
         allPinsData = snapshot.val() || {};
         for (const pinId in markers) {
@@ -196,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 9. GLOBAL FUNCTIONS for Popups ---
+    // --- 10. GLOBAL FUNCTIONS for Popups ---
     window.updateNote = function(pinId) {
         const noteText = document.getElementById(`note-${pinId}`).value;
         update(ref(database, `pins/${pinId}`), { note: noteText });
