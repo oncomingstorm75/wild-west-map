@@ -4,17 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wild West Map</title>
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-freedraw@2.12.0/dist/leaflet-freedraw.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <header id="main-header">
+        <h1>The Territory</h1>
+        <div class="header-controls">
+            <button id="add-pin-mode-button" class="western-button"><i class="fas fa-plus"></i> Add Discovery</button>
+            <button id="toggle-notes" class="western-button"><i class="fas fa-scroll"></i> Notes</button>
+        </div>
+    </header>
+
     <div id="map"></div>
 
+    <div id="notes-sidebar">
+        <h2>All Notes</h2>
+        <ul id="notes-list"></ul>
+    </div>
+
+    <div id="pin-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Add New Discovery</h2>
+            <label for="pin-title">Location/Title:</label>
+            <input type="text" id="pin-title" placeholder="e.g., Serpent's Pass, Old Man Jed's Cabin">
+            <label for="pin-note">Details/Clues:</label>
+            <textarea id="pin-note" placeholder="What did you find here? What's important?"></textarea>
+            <label>Category:</label>
+            <div class="category-selection">
+                <input type="radio" id="cat-quest" name="pin-category" value="quest" checked>
+                <label for="cat-quest" class="quest"><i class="fas fa-map-pin"></i> Quest</label>
+                <input type="radio" id="cat-hostile" name="pin-category" value="hostile">
+                <label for="cat-hostile" class="hostile"><i class="fas fa-skull"></i> Hostile</label>
+                <input type="radio" id="cat-clue" name="pin-category" value="clue">
+                <label for="cat-clue" class="clue"><i class="fas fa-question-circle"></i> Clue</label>
+                <input type="radio" id="cat-safe" name="pin-category" value="safe">
+                <label for="cat-safe" class="safe"><i class="fas fa-star"></i> Safe Haven</label>
+            </div>
+            <button id="save-pin-button" class="western-button">Add Pin</button>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+    <script src="https://unpkg.com/leaflet-freedraw@2.12.0/dist/leaflet-freedraw.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js" type="module"></script>
     <script src="script.js" type="module"></script>
 
 </body>
