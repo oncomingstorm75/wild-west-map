@@ -1,1 +1,44 @@
+/* Import a western-style font */
+@import url('https://fonts.googleapis.com/css2?family=Rye&display=swap');
 
+body {
+    padding: 0;
+    margin: 0;
+    background-color: #f3eacb; /* Parchment color */
+    font-family: 'Rye', cursive; /* Western font */
+}
+
+html, body, #map {
+    height: 100%;
+    width: 100%;
+}
+
+/* Style the popups to look like old paper */
+.leaflet-popup-content-wrapper {
+    background: #f3eacb;
+    color: #4a2c2a;
+    border: 2px solid #8B4513; /* SaddleBrown */
+    border-radius: 5px;
+}
+
+.leaflet-popup-content {
+    font-size: 16px;
+}
+
+.leaflet-popup-content textarea {
+    width: 95%;
+    height: 60px;
+    border: 1px solid #c9a47a;
+    background: #fff8e1;
+    color: #4a2c2a;
+}
+
+.leaflet-popup-content button {
+    font-family: 'Rye', cursive;
+    background-color: #8B4513;
+    color: #f3eacb;
+    border: none;
+    padding: 5px 10px;
+    margin-top: 5px;
+    cursor: pointer;
+}
