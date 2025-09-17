@@ -1,10 +1,9 @@
-// --- 1. FIREBASE IMPORTS (MUST BE AT THE TOP LEVEL) ---
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+// This event listener waits for the entire HTML document to be loaded before running code
+document.addEventListener('DOMContentLoaded', () => {
 
-// This function contains all of our app's logic.
-function initializeMap() {
     // --- 2. FIREBASE CONFIG & INITIALIZATION ---
+    // Note: No 'import' statements are needed at the top of this file.
+    // The firebase libraries are loaded in index.html before this script.
     const firebaseConfig = {
         apiKey: "AIzaSyAh_wDgSsdpG-8zMmgcSVgyKl1IKOvD2mE",
         authDomain: "wild-west-map.firebaseapp.com",
@@ -15,19 +14,20 @@ function initializeMap() {
         appId: "1:255220822931:web:7e44db610fe44bd7f72e66",
         measurementId: "G-3SPWSXBRNE"
     };
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const pinsRef = ref(database, 'pins');
+    
+    // Use the globally available 'firebase' object
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database;
+    const { ref, onValue, push, set, update, remove } = database; // Destructure functions
+    const db = database.getDatabase(app);
+    const pinsRef = ref(db, 'pins');
 
     // --- 3. LEAFLET MAP SETUP ---
     const mapWidth = 2048;
     const mapHeight = 1741;
     const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2 });
     const bounds = [[0, 0], [mapHeight, mapWidth]];
-    
-    // THE CRITICAL FIX: Make the image layer interactive.
     const image = L.imageOverlay('assets/image.png', bounds, { interactive: true }).addTo(map);
-    
     map.fitBounds(bounds);
 
     // --- 4. DOM ELEMENT REFERENCES ---
@@ -47,14 +47,7 @@ function initializeMap() {
     let allPinsData = {};
     let inAddPinMode = false;
     let clickedCoords = null;
-
-    const categoryIcons = {
-        quest: 'fas fa-map-pin',
-        hostile: 'fas fa-skull',
-        clue: 'fas fa-question-circle',
-        safe: 'fas fa-star',
-        default: 'fas fa-compass'
-    };
+    const categoryIcons = { quest: 'fas fa-map-pin', hostile: 'fas fa-skull', clue: 'fas fa-question-circle', safe: 'fas fa-star', default: 'fas fa-compass' };
 
     // --- 6. CORE FUNCTIONS ---
     function renderSidebar() {
@@ -63,12 +56,7 @@ function initializeMap() {
             const pinData = allPinsData[pinId];
             const listItem = document.createElement('li');
             listItem.dataset.category = pinData.category || 'default';
-            listItem.addEventListener('click', () => {
-                if (markers[pinId]) {
-                    markers[pinId].openPopup();
-                    map.setView(markers[pinId].getLatLng(), map.getZoom());
-                }
-            });
+            listItem.addEventListener('click', () => { if (markers[pinId]) { markers[pinId].openPopup(); map.setView(markers[pinId].getLatLng(), map.getZoom()); } });
             const iconClass = categoryIcons[pinData.category] || categoryIcons['default'];
             listItem.innerHTML = `<h3><i class="${iconClass}"></i> ${pinData.title || 'Untitled'}</h3><p>${pinData.note}</p>`;
             notesList.appendChild(listItem);
@@ -101,18 +89,11 @@ function initializeMap() {
 
     // --- 7. EVENT LISTENERS ---
     addPinModeButton.addEventListener('click', () => {
-        if (inAddPinMode) {
-            exitAddPinMode();
-        } else {
-            enterAddPinMode();
-        }
+        if (inAddPinMode) { exitAddPinMode(); } else { enterAddPinMode(); }
     });
 
-    // Listen for clicks directly on the now-interactive IMAGE OVERLAY.
     image.on('click', function(e) {
-        if (inAddPinMode) {
-            openPinModal(e.latlng);
-        }
+        if (inAddPinMode) { openPinModal(e.latlng); }
     });
 
     savePinButton.addEventListener('click', () => {
@@ -120,49 +101,24 @@ function initializeMap() {
         const note = pinNoteTextarea.value.trim();
         const selectedCategory = document.querySelector('input[name="pin-category"]:checked').value;
         if (!title || !clickedCoords) return;
-
         const newPinRef = push(pinsRef);
-        set(newPinRef, {
-            coords: clickedCoords,
-            title: title,
-            note: note,
-            category: selectedCategory
-        });
+        set(newPinRef, { coords: clickedCoords, title: title, note: note, category: selectedCategory });
         closePinModal();
         exitAddPinMode();
     });
 
-    toggleButton.addEventListener('click', () => {
-        notesSidebar.classList.toggle('open');
-    });
-
+    toggleButton.addEventListener('click', () => { notesSidebar.classList.toggle('open'); });
     closeButton.addEventListener('click', closePinModal);
-    window.addEventListener('click', (event) => {
-        if (event.target == pinModal) {
-            closePinModal();
-        }
-    });
+    window.addEventListener('click', (event) => { if (event.target == pinModal) { closePinModal(); } });
 
     // --- 8. FIREBASE REAL-TIME LISTENER for PINS ---
     onValue(pinsRef, (snapshot) => {
         allPinsData = snapshot.val() || {};
-        for (const pinId in markers) {
-            if (!allPinsData[pinId]) {
-                map.removeLayer(markers[pinId]);
-                delete markers[pinId];
-            }
-        }
+        for (const pinId in markers) { if (!allPinsData[pinId]) { map.removeLayer(markers[pinId]); delete markers[pinId]; } }
         for (const pinId in allPinsData) {
             const pinData = allPinsData[pinId];
             const iconClass = categoryIcons[pinData.category] || categoryIcons['default'];
-            const icon = L.divIcon({
-                className: `custom-div-icon ${pinData.category || 'default'}`,
-                html: `<i class="${iconClass}"></i>`,
-                iconSize: [28, 28],
-                iconAnchor: [14, 14],
-                popupAnchor: [0, -14]
-            });
-
+            const icon = L.divIcon({ className: `custom-div-icon ${pinData.category || 'default'}`, html: `<i class="${iconClass}"></i>`, iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -14] });
             const popupElement = document.createElement('div');
             const titleElement = document.createElement('h3');
             titleElement.textContent = pinData.title;
@@ -171,35 +127,22 @@ function initializeMap() {
             const saveButton = document.createElement('button');
             saveButton.textContent = 'Save Note';
             saveButton.className = 'western-button';
-            saveButton.addEventListener('click', () => {
-                const targetPinRef = ref(database, `pins/${pinId}`);
-                update(targetPinRef, { note: noteArea.value });
-                map.closePopup();
-            });
+            saveButton.addEventListener('click', () => { update(ref(db, `pins/${pinId}`), { note: noteArea.value }); map.closePopup(); });
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete Pin';
             deleteButton.className = 'western-button';
-            deleteButton.addEventListener('click', () => {
-                if (confirm(`Are you sure you want to delete "${pinData.title}"?`)) {
-                    const targetPinRef = ref(database, `pins/${pinId}`);
-                    remove(targetPinRef);
-                }
-            });
+            deleteButton.addEventListener('click', () => { if (confirm(`Are you sure you want to delete "${pinData.title}"?`)) { remove(ref(db, `pins/${pinId}`)); } });
             popupElement.append(titleElement, noteArea, saveButton, deleteButton);
-
             if (markers[pinId]) {
                 markers[pinId].setLatLng(pinData.coords);
                 markers[pinId].setIcon(icon);
                 markers[pinId].getPopup().setContent(popupElement);
             } else {
                 const marker = L.marker(pinData.coords, { icon: icon, draggable: true }).addTo(map).bindPopup(popupElement);
-                marker.on('dragend', (event) => update(ref(database, `pins/${pinId}`), { coords: event.target.getLatLng() }));
+                marker.on('dragend', (event) => update(ref(db, `pins/${pinId}`), { coords: event.target.getLatLng() }));
                 markers[pinId] = marker;
             }
         }
         renderSidebar();
     });
-}
-
-// This event listener waits for the entire HTML document to be loaded, then runs our main function.
-document.addEventListener('DOMContentLoaded', initializeMap);
+});
