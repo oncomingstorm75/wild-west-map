@@ -1,11 +1,27 @@
-/* Import a western-style font */
+/* Import Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Rye&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap');
+
+:root {
+    --parchment-light: #f3eacb;
+    --parchment-dark: #e0d5b6;
+    --wood-brown: #8B4513;
+    --dirt-brown: #4a2c2a;
+    --text-color: #3b271d;
+    --accent-yellow: #ffeb3b;
+    --accent-red: #d32f2f;
+    --accent-blue: #1e88e5;
+    --accent-green: #43a047;
+    --accent-gray: #888888;
+}
 
 body {
     padding: 0;
     margin: 0;
-    background-color: #f3eacb; /* Parchment color */
-    font-family: 'Rye', cursive; /* Western font */
+    background-color: var(--parchment-dark);
+    font-family: 'Rye', cursive;
+    color: var(--text-color);
+    overflow: hidden;
 }
 
 html, body, #map {
@@ -13,32 +29,212 @@ html, body, #map {
     width: 100%;
 }
 
-/* Style the popups to look like old paper */
-.leaflet-popup-content-wrapper {
-    background: #f3eacb;
-    color: #4a2c2a;
-    border: 2px solid #8B4513; /* SaddleBrown */
-    border-radius: 5px;
+h1, h2, h3 { font-family: 'Rye', cursive; color: var(--dirt-brown); }
+p, label, input, textarea, button, ul, li { font-family: 'Merriweather', serif; }
+
+/* --- NEW: Add Pin Mode Cursor --- */
+#map.add-pin-mode {
+    cursor: crosshair !important;
 }
 
-.leaflet-popup-content {
-    font-size: 16px;
-}
-
-.leaflet-popup-content textarea {
-    width: 95%;
-    height: 60px;
-    border: 1px solid #c9a47a;
-    background: #fff8e1;
-    color: #4a2c2a;
-}
-
-.leaflet-popup-content button {
+.western-button {
+    background-color: var(--wood-brown);
+    color: var(--parchment-light);
+    border: 2px solid var(--dirt-brown);
+    padding: 8px 15px;
     font-family: 'Rye', cursive;
-    background-color: #8B4513;
-    color: #f3eacb;
-    border: none;
-    padding: 5px 10px;
-    margin-top: 5px;
+    font-size: 0.9em;
     cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    transition: background-color 0.2s, transform 0.1s;
 }
+.western-button:hover {
+    background-color: #a05a1d;
+    transform: translateY(-1px);
+}
+.western-button:active, .western-button.active { /* NEW: Active state for Add Pin button */
+    background-color: var(--dirt-brown);
+    color: var(--accent-yellow);
+    transform: translateY(0);
+    box-shadow: inset 1px 1px 3px rgba(0,0,0,0.5);
+}
+
+/* --- HEADER --- */
+#main-header {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background-color: rgba(139, 69, 19, 0.9);
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--dirt-brown);
+    box-sizing: border-box;
+}
+#main-header h1 {
+    margin: 0;
+    color: var(--parchment-light);
+    font-size: 2em;
+    text-shadow: 2px 2px 3px rgba(0,0,0,0.5);
+}
+.header-controls {
+    display: flex;
+    gap: 10px;
+}
+
+/* --- LEAFLET POPUP STYLES --- */
+.leaflet-popup-content-wrapper {
+    background: var(--parchment-light);
+    color: var(--text-color);
+    border: 2px solid var(--wood-brown);
+    border-radius: 5px;
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
+}
+.leaflet-popup-content { font-size: 16px; }
+.leaflet-popup-content h3 { font-size: 1.2em; margin-top: 0; color: var(--wood-brown); }
+.leaflet-popup-content textarea {
+    width: 95%; height: 80px;
+    border: 1px solid var(--wood-brown);
+    background: #fff8e1;
+    color: var(--text-color);
+    padding: 5px;
+    font-family: 'Merriweather', serif;
+    resize: vertical;
+}
+.leaflet-popup-content .western-button { display: block; width: 98%; margin-top: 8px; box-sizing: border-box; }
+.leaflet-popup-content .western-button:last-of-type { margin-bottom: 5px; }
+
+/* --- CUSTOM MARKER ICONS --- */
+.custom-div-icon {
+    width: 28px !important; height: 28px !important;
+    background-color: var(--accent-gray);
+    border: 2px solid var(--dirt-brown);
+    border-radius: 50%;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    display: flex; justify-content: center; align-items: center;
+    font-size: 1em; color: var(--parchment-light);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+    transition: transform 0.1s ease-out;
+}
+.custom-div-icon:hover { transform: scale(1.2); }
+.custom-div-icon.quest { background-color: var(--accent-yellow); }
+.custom-div-icon.hostile { background-color: var(--accent-red); }
+.custom-div-icon.clue { background-color: var(--accent-blue); }
+.custom-div-icon.safe { background-color: var(--accent-green); }
+.custom-div-icon.default { background-color: var(--accent-gray); }
+
+/* --- SIDEBAR STYLES (OVERFLOW FIX) --- */
+#notes-sidebar {
+    position: absolute;
+    top: 0; right: -360px; /* Adjusted for padding */
+    width: 350px;
+    /* FIX: Calculate height based on header height */
+    height: calc(100vh - 67px); /* 100% of viewport height minus header height */
+    margin-top: 67px; /* Header height */
+    background-color: var(--parchment-light);
+    border-left: 4px solid var(--wood-brown);
+    box-shadow: -4px 0 10px rgba(0,0,0,0.4);
+    padding: 20px;
+    transition: right 0.4s ease-in-out;
+    overflow-y: auto;
+    color: var(--text-color);
+    z-index: 998;
+    box-sizing: border-box;
+}
+#notes-sidebar.open { right: 0; }
+#notes-sidebar h2 {
+    margin-top: 0; text-align: center;
+    border-bottom: 2px solid var(--wood-brown);
+    padding-bottom: 10px; font-size: 1.8em;
+    color: var(--dirt-brown);
+}
+#notes-sidebar ul { list-style: none; padding: 0; }
+#notes-sidebar li {
+    background-color: var(--parchment-dark);
+    padding: 10px; border-radius: 4px;
+    margin-bottom: 12px;
+    border-left: 5px solid var(--accent-gray);
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: transform 0.1s ease-out;
+}
+#notes-sidebar li:hover { transform: translateX(5px); }
+#notes-sidebar li h3 { margin: 0 0 5px 0; font-size: 1.1em; color: var(--wood-brown); }
+#notes-sidebar li p { margin: 0; font-family: 'Merriweather', serif; font-size: 0.9em; opacity: 0.9; }
+#notes-sidebar li[data-category="quest"] { border-left-color: var(--accent-yellow); }
+#notes-sidebar li[data-category="hostile"] { border-left-color: var(--accent-red); }
+#notes-sidebar li[data-category="clue"] { border-left-color: var(--accent-blue); }
+#notes-sidebar li[data-category="safe"] { border-left-color: var(--accent-green); }
+#notes-sidebar li[data-category="default"] { border-left-color: var(--accent-gray); }
+
+/* --- CUSTOM PIN MODAL --- */
+.modal {
+    display: none; position: fixed;
+    z-index: 1001; left: 0; top: 0;
+    width: 100%; height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+.modal-content {
+    background-color: var(--parchment-light);
+    margin: 10% auto; padding: 30px;
+    border: 3px solid var(--wood-brown);
+    border-radius: 8px;
+    width: 80%; max-width: 500px;
+    box-shadow: 5px 5px 20px rgba(0,0,0,0.7);
+    position: relative;
+    color: var(--text-color);
+}
+.modal-content h2 {
+    text-align: center; margin-top: 0; color: var(--dirt-brown);
+    border-bottom: 2px solid var(--wood-brown);
+    padding-bottom: 15px; margin-bottom: 20px;
+}
+.modal-content label { display: block; margin-bottom: 8px; font-weight: bold; font-family: 'Rye', cursive; font-size: 1.1em; }
+.modal-content input[type="text"],
+.modal-content textarea {
+    width: calc(100% - 20px);
+    padding: 10px; margin-bottom: 15px;
+    border: 1px solid var(--wood-brown);
+    border-radius: 4px;
+    background-color: #fff8e1;
+    color: var(--text-color);
+    font-family: 'Merriweather', serif;
+    font-size: 1em;
+}
+.modal-content textarea { min-height: 80px; resize: vertical; }
+.category-selection { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
+.category-selection input[type="radio"] { display: none; }
+.category-selection label {
+    display: flex; align-items: center;
+    background-color: var(--parchment-dark);
+    border: 2px solid var(--wood-brown);
+    border-radius: 20px;
+    padding: 8px 15px; cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-family: 'Merriweather', serif;
+    font-weight: normal; font-size: 0.9em;
+    color: var(--text-color);
+}
+.category-selection label i { margin-right: 8px; font-size: 1.2em; }
+.category-selection input[type="radio"]:checked + label {
+    background-color: var(--wood-brown);
+    color: var(--parchment-light);
+    border-color: var(--dirt-brown);
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.4);
+}
+.modal-content .western-button { width: 100%; margin-top: 15px; padding: 12px; font-size: 1.2em; }
+.close-button {
+    color: var(--dirt-brown);
+    position: absolute; right: 15px; top: 10px;
+    font-size: 28px; font-weight: bold; cursor: pointer;
+    transition: color 0.2s;
+}
+.close-button:hover,
+.close-button:focus { color: var(--wood-brown); }
