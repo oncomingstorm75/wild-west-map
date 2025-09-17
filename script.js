@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const pinsRef = ref(database, 'pins');
-    const drawingsRef = ref(database, 'drawings');
 
     // --- 3. LEAFLET MAP SETUP ---
     const mapWidth = 2048;
@@ -55,14 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         default: 'fas fa-compass'
     };
 
-    // --- 6. DRAWING SETUP ---
-    const freeDraw = new L.FreeDraw({
-        mode: L.FreeDraw.MODES.ALL,
-        markerIcon: L.divIcon({ className: 'freedraw-vertex-icon' })
-    });
-    map.addLayer(freeDraw);
-
-    // --- 7. CORE FUNCTIONS ---
+    // --- 6. CORE FUNCTIONS ---
     function renderSidebar() {
         notesList.innerHTML = '';
         for (const pinId in allPinsData) {
@@ -105,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pinModal.style.display = 'none';
     }
 
-    // --- 8. EVENT LISTENERS ---
+    // --- 7. EVENT LISTENERS ---
     addPinModeButton.addEventListener('click', () => {
         if (inAddPinMode) {
             exitAddPinMode();
@@ -148,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 9. FIREBASE REAL-TIME LISTENERS ---
+    // --- 8. FIREBASE REAL-TIME LISTENER for PINS ---
     onValue(pinsRef, (snapshot) => {
         allPinsData = snapshot.val() || {};
         for (const pinId in markers) {
@@ -181,23 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSidebar();
     });
 
-    freeDraw.on('markers', event => {
-        if (event.sourceEvent) {
-            set(drawingsRef, freeDraw.getLatLngs());
-        }
-    });
-
-    onValue(drawingsRef, (snapshot) => {
-        const latlngs = snapshot.val();
-        if (latlngs) {
-            freeDraw.clear();
-            freeDraw.create(latlngs, false);
-        } else {
-            freeDraw.clear();
-        }
-    });
-
-    // --- 10. GLOBAL FUNCTIONS for Popups ---
+    // --- 9. GLOBAL FUNCTIONS for Popups ---
     window.updateNote = function(pinId) {
         const noteText = document.getElementById(`note-${pinId}`).value;
         update(ref(database, `pins/${pinId}`), { note: noteText });
