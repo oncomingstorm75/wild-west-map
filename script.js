@@ -1,3 +1,5 @@
+// FINAL SIMPLIFIED VERSION - NO DRAWING PLUGIN
+
 // --- 1. FIREBASE IMPORTS (MUST BE AT THE TOP LEVEL) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
@@ -179,6 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
         update(ref(database, `pins/${pinId}`), { note: noteText });
         map.closePopup();
     };
+
+
 
     window.deletePin = function(pinId) {
         remove(ref(database, `pins/${pinId}`));
