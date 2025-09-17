@@ -1,12 +1,9 @@
-// FINAL SIMPLIFIED VERSION - NO DRAWING PLUGIN
-
 // --- 1. FIREBASE IMPORTS (MUST BE AT THE TOP LEVEL) ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-// This event listener waits for the entire HTML document to be loaded before running code
-document.addEventListener('DOMContentLoaded', () => {
-
+// This function contains all of our app's logic.
+function initializeMap() {
     // --- 2. FIREBASE CONFIG & INITIALIZATION ---
     const firebaseConfig = {
         apiKey: "AIzaSyAh_wDgSsdpG-8zMmgcSVgyKl1IKOvD2mE",
@@ -108,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    map.on('click', function(e) {
+    map..on('click', function(e) {
         if (inAddPinMode) {
             openPinModal(e.latlng);
         }
@@ -161,31 +158,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 iconAnchor: [14, 14],
                 popupAnchor: [0, -14]
             });
-            const popupContent = `<h3>${pinData.title}</h3><textarea id="note-${pinId}">${pinData.note}</textarea><button class="western-button" onclick="updateNote('${pinId}')">Save Note</button><button class="western-button" onclick="deletePin('${pinId}')">Delete Pin</button>`;
+
+            // --- REWRITTEN POPUP CREATION ---
+            const popupElement = document.createElement('div');
+            
+            const titleElement = document.createElement('h3');
+            titleElement.textContent = pinData.title;
+
+            const noteArea = document.createElement('textarea');
+            noteArea.value = pinData.note;
+
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Save Note';
+            saveButton.className = 'western-button';
+            saveButton.addEventListener('click', () => {
+                const targetPinRef = ref(database, `pins/${pinId}`);
+                update(targetPinRef, { note: noteArea.value });
+                map.closePopup();
+            });
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete Pin';
+            deleteButton.className = 'western-button';
+            deleteButton.addEventListener('click', () => {
+                if (confirm(`Are you sure you want to delete "${pinData.title}"?`)) {
+                    const targetPinRef = ref(database, `pins/${pinId}`);
+                    remove(targetPinRef);
+                }
+            });
+            
+            popupElement.append(titleElement, noteArea, saveButton, deleteButton);
+            // --- END OF REWRITE ---
+
             if (markers[pinId]) {
                 markers[pinId].setLatLng(pinData.coords);
                 markers[pinId].setIcon(icon);
-                markers[pinId].getPopup().setContent(popupContent);
+                markers[pinId].getPopup().setContent(popupElement);
             } else {
-                const marker = L.marker(pinData.coords, { icon: icon, draggable: true }).addTo(map).bindPopup(popupContent);
+                const marker = L.marker(pinData.coords, { icon: icon, draggable: true }).addTo(map).bindPopup(popupElement);
                 marker.on('dragend', (event) => update(ref(database, `pins/${pinId}`), { coords: event.target.getLatLng() }));
                 markers[pinId] = marker;
             }
         }
         renderSidebar();
     });
+}
 
-    // --- 9. GLOBAL FUNCTIONS for Popups ---
-    window.updateNote = function(pinId) {
-        const noteText = document.getElementById(`note-${pinId}`).value;
-        update(ref(database, `pins/${pinId}`), { note: noteText });
-        map.closePopup();
-    };
-
-
-
-    window.deletePin = function(pinId) {
-        remove(ref(database, `pins/${pinId}`));
-    };
-
-}); // End of the DOMContentLoaded event listener
+// This event listener waits for the entire HTML document to be loaded, then runs our main function.
+document.addEventListener('DOMContentLoaded', initializeMap);
