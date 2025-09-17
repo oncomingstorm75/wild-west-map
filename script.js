@@ -1,128 +1,211 @@
-// --- 1. FIREBASE SETUP (Modern ES Module Style) ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-// Import the functions you need from the SDKs
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getDatabase, ref, onChildAdded, onChildChanged, onChildRemoved, push, set, update, remove } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
-
-// Your web app's Firebase configuration
+// --- 1. FIREBASE SETUP ---
 const firebaseConfig = {
     apiKey: "AIzaSyAh_wDgSsdpG-8zMmgcSVgyKl1IKOvD2mE",
     authDomain: "wild-west-map.firebaseapp.com",
     databaseURL: "https://wild-west-map-default-rtdb.firebaseio.com",
     projectId: "wild-west-map",
-    storageBucket: "wild-west-map.firebasestorage.app",
+    storageBucket: "wild-west-map.appspot.com",
     messagingSenderId: "255220822931",
     appId: "1:255220822931:web:7e44db610fe44bd7f72e66",
     measurementId: "G-3SPWSXBRNE"
 };
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-const pinsRef = ref(database, 'territory-data/pins');
-
+const pinsRef = ref(database, 'pins');
+const drawingsRef = ref(database, 'drawings'); // Firebase ref for drawings
 
 // --- 2. LEAFLET MAP SETUP ---
-// Your image's dimensions (Width x Height)
 const mapWidth = 2048;
 const mapHeight = 1741;
-
-// Initialize the map
-const map = L.map('map', {
-    crs: L.CRS.Simple, // Use a simple coordinate system for a flat image
-    minZoom: -2,
-});
-
-// Define the image bounds and add it to the map
+const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2 });
 const bounds = [[0, 0], [mapHeight, mapWidth]];
-const image = L.imageOverlay('assets/image.png', bounds).addTo(map);
+// Ensure your map image file is in the correct path
+L.imageOverlay('assets/image.png', bounds).addTo(map);
 map.fitBounds(bounds);
 
+// --- 3. DOM ELEMENT REFERENCES ---
+const notesSidebar = document.getElementById('notes-sidebar');
+const notesList = document.getElementById('notes-list');
+const toggleButton = document.getElementById('toggle-notes');
+const mapContainer = document.getElementById('map');
+const addPinModeButton = document.getElementById('add-pin-mode-button');
 
-// --- 3. CUSTOM PIN ICON ---
-const sheriffStarIcon = L.icon({
-    iconUrl: 'assets/sheriff-star.png',
-    iconSize: [40, 40],
-    iconAnchor: [20, 20],
-    popupAnchor: [0, -20]
-});
+// Modal elements
+const pinModal = document.getElementById('pin-modal');
+const closeButton = pinModal.querySelector('.close-button');
+const pinTitleInput = document.getElementById('pin-title');
+const pinNoteTextarea = document.getElementById('pin-note');
+const savePinButton = document.getElementById('save-pin-button');
 
-// Local object to keep track of markers on the map
+// --- 4. LOCAL DATA & STATE ---
 const markers = {};
+let allPinsData = {};
+let inAddPinMode = false; // State for pin placement mode
+let clickedCoords = null;
 
+const categoryIcons = {
+    quest: 'fas fa-map-pin',
+    hostile: 'fas fa-skull',
+    clue: 'fas fa-question-circle',
+    safe: 'fas fa-star',
+    default: 'fas fa-compass'
+};
 
-// --- 4. COLLABORATIVE FUNCTIONS ---
+// --- 5. DRAWING SETUP ---
+const freeDraw = new L.FreeDraw({
+    mode: L.FreeDraw.MODES.ALL, // Allow create, edit, delete, append
+    markerIcon: L.divIcon({ className: 'freedraw-vertex-icon' })
+});
+map.addLayer(freeDraw);
 
-// Function to add a new pin when a user clicks the map
-map.on('click', function(e) {
-    const coords = e.latlng;
-    const newPinRef = push(pinsRef); // Create a new unique ID
-    set(newPinRef, {
-        coords: coords,
-        note: 'New territory...'
-    });
+// --- 6. CORE FUNCTIONS ---
+
+function renderSidebar() {
+    notesList.innerHTML = '';
+    for (const pinId in allPinsData) {
+        const pinData = allPinsData[pinId];
+        const listItem = document.createElement('li');
+        listItem.dataset.category = pinData.category || 'default';
+        listItem.addEventListener('click', () => {
+            if (markers[pinId]) {
+                markers[pinId].openPopup();
+                map.setView(markers[pinId].getLatLng(), map.getZoom());
+            }
+        });
+        const iconClass = categoryIcons[pinData.category] || categoryIcons['default'];
+        listItem.innerHTML = `<h3><i class="${iconClass}"></i> ${pinData.title || 'Untitled'}</h3><p>${pinData.note}</p>`;
+        notesList.appendChild(listItem);
+    }
+}
+
+function enterAddPinMode() {
+    inAddPinMode = true;
+    mapContainer.classList.add('add-pin-mode');
+    addPinModeButton.classList.add('active');
+}
+
+function exitAddPinMode() {
+    inAddPinMode = false;
+    mapContainer.classList.remove('add-pin-mode');
+    addPinModeButton.classList.remove('active');
+}
+
+function openPinModal(coords) {
+    clickedCoords = coords;
+    pinTitleInput.value = '';
+    pinNoteTextarea.value = '';
+    document.getElementById('cat-quest').checked = true;
+    pinModal.style.display = 'block';
+}
+
+function closePinModal() {
+    pinModal.style.display = 'none';
+}
+
+// --- 7. EVENT LISTENERS ---
+
+addPinModeButton.addEventListener('click', () => {
+    if (inAddPinMode) {
+        exitAddPinMode();
+    } else {
+        enterAddPinMode();
+    }
 });
 
-// These functions must be attached to the global 'window' object
-// so they can be called by the 'onclick' attributes in the HTML popup
+map.on('click', function(e) {
+    if (inAddPinMode) {
+        openPinModal(e.latlng);
+    }
+});
+
+savePinButton.addEventListener('click', () => {
+    const title = pinTitleInput.value.trim();
+    const note = pinNoteTextarea.value.trim();
+    const selectedCategory = document.querySelector('input[name="pin-category"]:checked').value;
+    if (!title || !clickedCoords) return;
+
+    const newPinRef = push(pinsRef);
+    set(newPinRef, {
+        coords: clickedCoords,
+        title: title,
+        note: note,
+        category: selectedCategory
+    });
+    closePinModal();
+    exitAddPinMode(); // Automatically exit mode after saving a pin
+});
+
+toggleButton.addEventListener('click', () => {
+    notesSidebar.classList.toggle('open');
+});
+
+closeButton.addEventListener('click', closePinModal);
+window.addEventListener('click', (event) => {
+    if (event.target == pinModal) {
+        closePinModal();
+    }
+});
+
+// --- 8. FIREBASE REAL-TIME LISTENERS ---
+
+onValue(pinsRef, (snapshot) => {
+    allPinsData = snapshot.val() || {};
+    for (const pinId in markers) {
+        if (!allPinsData[pinId]) {
+            map.removeLayer(markers[pinId]);
+            delete markers[pinId];
+        }
+    }
+    for (const pinId in allPinsData) {
+        const pinData = allPinsData[pinId];
+        const iconClass = categoryIcons[pinData.category] || categoryIcons['default'];
+        const icon = L.divIcon({
+            className: `custom-div-icon ${pinData.category || 'default'}`,
+            html: `<i class="${iconClass}"></i>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+            popupAnchor: [0, -14]
+        });
+        const popupContent = `<h3>${pinData.title}</h3><textarea id="note-${pinId}">${pinData.note}</textarea><button class="western-button" onclick="updateNote('${pinId}')">Save Note</button><button class="western-button" onclick="deletePin('${pinId}')">Delete Pin</button>`;
+        if (markers[pinId]) {
+            markers[pinId].setLatLng(pinData.coords);
+            markers[pinId].setIcon(icon);
+            markers[pinId].getPopup().setContent(popupContent);
+        } else {
+            const marker = L.marker(pinData.coords, { icon: icon, draggable: true }).addTo(map).bindPopup(popupContent);
+            marker.on('dragend', (event) => update(ref(database, `pins/${pinId}`), { coords: event.target.getLatLng() }));
+            markers[pinId] = marker;
+        }
+    }
+    renderSidebar();
+});
+
+freeDraw.on('markers', event => {
+    if (event.sourceEvent) {
+        set(drawingsRef, freeDraw.getLatLngs());
+    }
+});
+
+onValue(drawingsRef, (snapshot) => {
+    const latlngs = snapshot.val();
+    if (latlngs) {
+        freeDraw.clear();
+        freeDraw.create(latlngs, false);
+    } else {
+        freeDraw.clear();
+    }
+});
+
+// --- 9. GLOBAL FUNCTIONS for Popups ---
 window.updateNote = function(pinId) {
     const noteText = document.getElementById(`note-${pinId}`).value;
-    const targetPinRef = ref(database, `territory-data/pins/${pinId}`);
-    update(targetPinRef, { note: noteText });
+    update(ref(database, `pins/${pinId}`), { note: noteText });
     map.closePopup();
-}
+};
 
 window.deletePin = function(pinId) {
-    const targetPinRef = ref(database, `territory-data/pins/${pinId}`);
-    remove(targetPinRef);
-}
-
-
-// --- 5. FIREBASE REAL-TIME LISTENERS (Modern Style) ---
-
-// When a new pin is added to Firebase, add it to the map
-onChildAdded(pinsRef, (snapshot) => {
-    const pinId = snapshot.key;
-    const pinData = snapshot.val();
-    
-    const marker = L.marker(pinData.coords, { icon: sheriffStarIcon, draggable: true })
-        .addTo(map)
-        .bindPopup(`
-            <textarea id="note-${pinId}">${pinData.note}</textarea>
-            <button onclick="updateNote('${pinId}')">Save Note</button>
-            <br>
-            <button onclick="deletePin('${pinId}')">Delete Pin</button>
-        `);
-
-    // Listen for drag events to update coordinates
-    marker.on('dragend', function(event) {
-        const targetPinRef = ref(database, `territory-data/pins/${pinId}`);
-        update(targetPinRef, { coords: event.target.getLatLng() });
-    });
-
-    markers[pinId] = marker;
-});
-
-// When a pin is removed from Firebase, remove it from the map
-onChildRemoved(pinsRef, (snapshot) => {
-    const pinId = snapshot.key;
-    if (markers[pinId]) {
-        map.removeLayer(markers[pinId]);
-        delete markers[pinId];
-    }
-});
-
-// When a pin's data changes, update it on the map
-onChildChanged(pinsRef, (snapshot) => {
-    const pinId = snapshot.key;
-    const pinData = snapshot.val();
-    if (markers[pinId]) {
-        markers[pinId].setLatLng(pinData.coords);
-        markers[pinId].getPopup().setContent(`
-            <textarea id="note-${pinId}">${pinData.note}</textarea>
-            <button onclick="updateNote('${pinId}')">Save Note</button>
-            <br>
-            <button onclick="deletePin('${pinId}')">Delete Pin</button>
-        `);
-    }
-});
+    remove(ref(database, `pins/${pinId}`));
+};
