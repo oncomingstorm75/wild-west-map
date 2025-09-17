@@ -37,7 +37,10 @@ html, body, #map {
 h1, h2, h3 { font-family: 'Rye', cursive; color: var(--accent-primary); }
 p, label, input, textarea, button, ul, li { font-family: 'Merriweather', serif; }
 
-#map.add-pin-mode { cursor: crosshair !important; }
+/* Improved Cursor Rule */
+#map.add-pin-mode .leaflet-container { 
+    cursor: crosshair !important; 
+}
 
 /* --- HEADER & BUTTONS --- */
 .western-button {
