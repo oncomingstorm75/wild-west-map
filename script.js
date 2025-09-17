@@ -24,7 +24,10 @@ function initializeMap() {
     const mapHeight = 1741;
     const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2 });
     const bounds = [[0, 0], [mapHeight, mapWidth]];
-    L.imageOverlay('assets/image.png', bounds).addTo(map);
+    
+    // Create the image overlay and assign it to a variable
+    const image = L.imageOverlay('assets/image.png', bounds).addTo(map);
+    
     map.fitBounds(bounds);
 
     // --- 4. DOM ELEMENT REFERENCES ---
@@ -105,8 +108,9 @@ function initializeMap() {
         }
     });
 
-    // CORRECTED: Was 'map..on'
-    map.on('click', function(e) {
+    // --- THE FINAL FIX ---
+    // Listen for clicks directly on the IMAGE OVERLAY, not the map container.
+    image.on('click', function(e) {
         if (inAddPinMode) {
             openPinModal(e.latlng);
         }
@@ -160,15 +164,11 @@ function initializeMap() {
                 popupAnchor: [0, -14]
             });
 
-            // --- REWRITTEN POPUP CREATION ---
             const popupElement = document.createElement('div');
-            
             const titleElement = document.createElement('h3');
             titleElement.textContent = pinData.title;
-
             const noteArea = document.createElement('textarea');
             noteArea.value = pinData.note;
-
             const saveButton = document.createElement('button');
             saveButton.textContent = 'Save Note';
             saveButton.className = 'western-button';
@@ -177,7 +177,6 @@ function initializeMap() {
                 update(targetPinRef, { note: noteArea.value });
                 map.closePopup();
             });
-            
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete Pin';
             deleteButton.className = 'western-button';
@@ -187,9 +186,7 @@ function initializeMap() {
                     remove(targetPinRef);
                 }
             });
-            
             popupElement.append(titleElement, noteArea, saveButton, deleteButton);
-            // --- END OF REWRITE ---
 
             if (markers[pinId]) {
                 markers[pinId].setLatLng(pinData.coords);
