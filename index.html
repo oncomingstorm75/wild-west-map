@@ -4,17 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wild West Map</title>
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="map"></div>
 
+    <div class="controls">
+        <button id="toggle-notes">Show/Hide Notes</button>
+    </div>
+    <div id="notes-sidebar">
+        <h2>All Notes</h2>
+        <ul id="notes-list"></ul>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
     <script src="script.js" type="module"></script>
 
 </body>
