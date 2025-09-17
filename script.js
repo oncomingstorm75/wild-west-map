@@ -2,8 +2,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
 import { getDatabase, ref, onValue, push, set, update, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-// This function contains all of our app's logic.
-function initializeMap() {
+// This event listener waits for the entire HTML document to be loaded before running code
+document.addEventListener('DOMContentLoaded', () => {
+
     // --- 2. FIREBASE CONFIG & INITIALIZATION ---
     const firebaseConfig = {
         apiKey: "AIzaSyAh_wDgSsdpG-8zMmgcSVgyKl1IKOvD2mE",
@@ -24,7 +25,12 @@ function initializeMap() {
     const mapHeight = 1741;
     const map = L.map('map', { crs: L.CRS.Simple, minZoom: -2 });
     const bounds = [[0, 0], [mapHeight, mapWidth]];
+    
+    // --- IMPORTANT ---
+    // Change 'assets/image.png' below to the correct path for your map image!
+    // For example: 'map.jpg' or 'assets/TheTerritory.png'
     L.imageOverlay('assets/image.png', bounds).addTo(map);
+    
     map.fitBounds(bounds);
 
     // --- 4. DOM ELEMENT REFERENCES ---
@@ -105,7 +111,7 @@ function initializeMap() {
         }
     });
 
-    map..on('click', function(e) {
+    map.on('click', function(e) {
         if (inAddPinMode) {
             openPinModal(e.latlng);
         }
@@ -202,7 +208,5 @@ function initializeMap() {
         }
         renderSidebar();
     });
-}
 
-// This event listener waits for the entire HTML document to be loaded, then runs our main function.
-document.addEventListener('DOMContentLoaded', initializeMap);
+}); // End of the DOMContentLoaded event listener
