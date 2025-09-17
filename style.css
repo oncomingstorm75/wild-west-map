@@ -31,6 +31,12 @@ html, body, #map {
     width: 100%;
 }
 
+/* NEW: Make the area around the map dark */
+.leaflet-container {
+    background-color: var(--background-dark);
+}
+
+
 h1, h2, h3 { font-family: 'Rye', cursive; color: var(--accent-primary); }
 p, label, input, textarea, button, ul, li { font-family: 'Merriweather', serif; }
 
@@ -84,6 +90,8 @@ p, label, input, textarea, button, ul, li { font-family: 'Merriweather', serif; 
     background: var(--background-dark);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
+    width: 95%; height: 80px;
+    resize: vertical;
 }
 .leaflet-draw-toolbar a {
     background-color: var(--background-med);
@@ -96,7 +104,14 @@ p, label, input, textarea, button, ul, li { font-family: 'Merriweather', serif; 
     border: 2px solid var(--text-primary);
     box-shadow: 0 0 8px rgba(0,0,0,0.7);
     color: var(--background-dark);
+    width: 28px !important; height: 28px !important;
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 1em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+    transition: transform 0.1s ease-out;
 }
+.custom-div-icon:hover { transform: scale(1.2); }
 .custom-div-icon.quest { background-color: var(--accent-yellow); }
 .custom-div-icon.hostile { background-color: var(--accent-red); }
 .custom-div-icon.clue { background-color: var(--accent-blue); }
